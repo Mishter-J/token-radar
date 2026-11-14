@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Token Radar — pre-token protocols ranked by implied value</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="masthead">
+  <div class="masthead-inner">
+    <p class="kicker">TOKEN RADAR &middot; MODEL RADAR-2 &middot; SNAPSHOT <span id="asof"></span></p>
+    <h1>Which protocol&rsquo;s token would be worth the most?</h1>
+    <p class="lede">Every protocol below records no token yet. Each row&rsquo;s implied value is this radar&rsquo;s own claim, worked out from the protocol&rsquo;s locked value, its seven-day growth and how long it has run with no token &mdash; never from a list of names. Click any row for its farm plan.</p>
+    <dl class="stats" id="stats"></dl>
+  </div>
+</header>
+
+<main>
+  <section class="controls" aria-label="Board controls">
+    <label>Search <input id="q" type="search" placeholder="name, slug or category&hellip;" autocomplete="off"></label>
+    <label>Category <select id="cat"><option value="">All categories</option></select></label>
+    <label>Board <select id="status">
+      <option value="all">All 200 rows</option>
+      <option value="watchlist">Watchlist only</option>
+      <option value="early">Early finds only</option>
+    </select></label>
+    <label>Sort <select id="sort">
+      <option value="rank">Implied value (rank)</option>
+      <option value="tvl">Locked value (TVL)</option>
+      <option value="change">7-day growth</option>
+      <option value="name">Name A&ndash;Z</option>
+    </select></label>
+    <p class="count" id="count"></p>
+  </section>
+
+  <section class="board-wrap" aria-label="Ranked board">
+    <table class="board">
+      <thead><tr>
+        <th data-sort="rank">#</th>
+        <th data-sort="name">Protocol</th>
+        <th>Category</th>
+        <th>Chains</th>
+        <th data-sort="tvl" class="num">TVL</th>
+        <th data-sort="change" class="num">7-day</th>
+        <th class="num">Implied value</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p class="empty" id="empty" hidden>No protocol matches this filter. Clear the search or pick another category.</p>
+  </section>
+
+  <section class="detail" id="detail" aria-label="Protocol detail" hidden></section>
+
+  <section class="model" aria-label="How the value is worked out">
+    <h2>How the implied value is worked out</h2>
+    <p><strong>implied = TVL &times; 0.30 &times; growth &times; maturity.</strong> Growth is the protocol&rsquo;s seven-day TVL change, clamped to &minus;50% &hellip; +150%, weighted 0.8. Maturity is 0.50 + (days listed, capped at 1,460) / 1,460 &times; 0.50, so a protocol listed four years ago counts at full weight and a new one at half. A protocol with no listing date is counted at 365 days. Every row on this page can be re-derived from those three numbers &mdash; the detail view shows each one.</p>
+    <p>The watchlist is the floor, never the ceiling: the 40 protocols at or above $50m of locked value with no token recorded, plus the 160 highest-implied-value pre-token protocols the watchlist leaves out, below that floor and above it. Protocols whose token already trades are kept apart below, at the market&rsquo;s own market cap &mdash; they are never ranked against the ones still to come.</p>
+    <p class="caveat">A protocol &ldquo;records no token&rdquo; when its DefiLlama record carries none; that is not proof it has none. Nothing here predicts whether or when a token is issued.</p>
+  </section>
+
+  <section class="live" aria-label="Protocols whose token already trades">
+    <h2>Already trading &mdash; the market&rsquo;s own values</h2>
+    <p>These protocols record a token, so the market has already priced them. They are listed here for contrast, never ranked with the pre-token board.</p>
+    <table class="board live-table">
+      <thead><tr><th>Protocol</th><th>Category</th><th class="num">TVL</th><th class="num">Market cap</th><th class="num">7-day</th></tr></thead>
+      <tbody id="live-rows"></tbody>
+    </table>
+  </section>
+</main>
+
+<footer>
+  <p>Token Radar &middot; built for the make.fun token-radar-01 bounty &middot; data: DefiLlama snapshot, sealed at the competition&rsquo;s fetch &middot; values are the radar&rsquo;s own claims, not make.fun&rsquo;s.</p>
+</footer>
+
+<script src="../data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
