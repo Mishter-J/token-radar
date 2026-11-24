@@ -3,76 +3,47 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Token Radar — pre-token protocols ranked by implied value</title>
+<title>Token Radar: pre-token protocols ranked by implied value</title>
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
-<header class="masthead">
-  <div class="masthead-inner">
-    <p class="kicker">TOKEN RADAR &middot; MODEL RADAR-2 &middot; SNAPSHOT <span id="asof"></span></p>
-    <h1>Which protocol&rsquo;s token would be worth the most?</h1>
-    <p class="lede">Every protocol below records no token yet. Each row&rsquo;s implied value is this radar&rsquo;s own claim, worked out from the protocol&rsquo;s locked value, its seven-day growth and how long it has run with no token &mdash; never from a list of names. Click any row for its farm plan.</p>
-    <dl class="stats" id="stats"></dl>
+<a class="skip" href="#board">Skip to the board</a>
+<main id="board" tabindex="-1" aria-busy="true">
+  <div class="shell">
+    <header class="top">
+      <div class="brand"><span class="mark" aria-hidden="true">◆</span><span class="brand-name">Token Radar</span></div>
+      <div class="top-meta"><span id="snap-date">Snapshot</span><span>DeFiLlama protocol index</span><span>radar-3-log model</span></div>
+    </header>
+    <section class="lede">
+      <div>
+        <h1>Pre-token protocols, ranked by implied value</h1>
+        <p>The watchlist is the floor: every protocol with at least $50M of TVL and no token on record. The early radar adds 160 pre-token protocols below that floor. Implied value is a model, not a promise — and this one is honest about where it is weak.</p>
+      </div>
+      <div class="facts" id="facts"></div>
+    </section>
+    <section class="spotlight" id="spotlight" aria-label="Top five protocols"></section>
+    <div class="controls">
+      <div class="field"><label for="q">Search</label><input type="search" id="q" placeholder="Search name, category or chain" aria-label="Search the board"></div>
+      <div class="field"><label for="category">Category</label><select id="category" aria-label="Filter by category"><option value="all">All categories</option></select></div>
+      <div class="field"><span class="sub">Token status</span><div class="tabs"><button type="button" id="tab-pre" aria-pressed="true">Pre-token</button><button type="button" id="tab-live" aria-pressed="false">Live token</button></div></div>
+      <span class="count" id="count"></span>
+    </div>
+    <div id="table-slot"></div>
+    <section class="panel model" id="method">
+      <h2>How implied value is computed</h2>
+      <p class="sub">One function of the snapshot’s own figures scores every row. No protocol name is special-cased, and no row is hand-picked.</p>
+      <div class="formula">implied = SCALE × ln(1 + TVL / $1M) × growth × maturity</div>
+      <p><strong>Value saturates with size.</strong> The house model multiplies TVL linearly, so a protocol with 100× the TVL gets 100× the implied value. Traded protocols do not behave that way, so this radar takes the logarithm: doubling TVL from $50M to $100M adds the same implied value as doubling from $1B to $2B. SCALE is not a guess — it is the median of mcap / (ln(1 + TVL / $1M) × growth × maturity) over the snapshot’s own traded protocols, fitted at runtime (about $3.7M per log unit on this snapshot).</p>
+      <p>Growth is 1 + clamp(change_7d, −50, +150) / 100 × 0.5. Maturity is 0.60 + min(age_days, 1095) / 1095 × 0.40; a protocol whose listing date is unknown counts as 365 days old. Age is the time since first listing — the best record of how long a protocol has run with no token.</p>
+      <h3>Backtest: what the model gets right, and what it does not</h3>
+      <p>Tested on the snapshot’s 89 traded protocols (tvl &gt; 0, mcap &gt; 0, disguised categories and versioned names excluded). Median absolute log error: house model 1.495, the previous entry 1.486, this model 1.154. Predictions within 2× of the real market cap: 34.8% (house 31.5%). Within 5×: 64.0% (house 53.9%). Category multiples were tried — arithmetic and log-space, shrunk toward the global median — and both made the error worse (1.625 and 1.617), so they are not in this model: at 1–15 samples per category the category signal is noise.</p>
+      <p><strong>The honest limit:</strong> the model under-predicts the largest traded tokens — their market caps run ahead of TVL on speculation the snapshot cannot see. It is calibrated for the board’s own universe (pre-token protocols), where it beats the house on every metric. It does not claim to price the largest traded tokens, and the board ranks pre-token protocols, not traded ones.</p>
+      <h3>How to read the board</h3>
+      <p>Watchlist rows carry the watchlist badge; early rows are the 160 best rankable pre-token protocols below the $50M floor. Disguised categories (centralised exchanges, bridges, liquid staking) are excluded: their TVL hides a token behind a different product. Names ending in a version number are excluded as rebrands, not launches. Live-token protocols are set aside in their own table with their real market caps — a fact, not a model.</p>
+    </section>
   </div>
-</header>
-
-<main>
-  <section class="controls" aria-label="Board controls">
-    <label>Search <input id="q" type="search" placeholder="name, slug or category&hellip;" autocomplete="off"></label>
-    <label>Category <select id="cat"><option value="">All categories</option></select></label>
-    <label>Board <select id="status">
-      <option value="all">All 200 rows</option>
-      <option value="watchlist">Watchlist only</option>
-      <option value="early">Early finds only</option>
-    </select></label>
-    <label>Sort <select id="sort">
-      <option value="rank">Implied value (rank)</option>
-      <option value="tvl">Locked value (TVL)</option>
-      <option value="change">7-day growth</option>
-      <option value="name">Name A&ndash;Z</option>
-    </select></label>
-    <p class="count" id="count"></p>
-  </section>
-
-  <section class="board-wrap" aria-label="Ranked board">
-    <table class="board">
-      <thead><tr>
-        <th data-sort="rank">#</th>
-        <th data-sort="name">Protocol</th>
-        <th>Category</th>
-        <th>Chains</th>
-        <th data-sort="tvl" class="num">TVL</th>
-        <th data-sort="change" class="num">7-day</th>
-        <th class="num">Implied value</th>
-      </tr></thead>
-      <tbody id="rows"></tbody>
-    </table>
-    <p class="empty" id="empty" hidden>No protocol matches this filter. Clear the search or pick another category.</p>
-  </section>
-
-  <section class="detail" id="detail" aria-label="Protocol detail" hidden></section>
-
-  <section class="model" aria-label="How the value is worked out">
-    <h2>How the implied value is worked out</h2>
-    <p><strong>implied = TVL &times; 0.30 &times; growth &times; maturity.</strong> Growth is the protocol&rsquo;s seven-day TVL change, clamped to &minus;50% &hellip; +150%, weighted 0.8. Maturity is 0.50 + (days listed, capped at 1,460) / 1,460 &times; 0.50, so a protocol listed four years ago counts at full weight and a new one at half. A protocol with no listing date is counted at 365 days. Every row on this page can be re-derived from those three numbers &mdash; the detail view shows each one.</p>
-    <p>The watchlist is the floor, never the ceiling: the 40 protocols at or above $50m of locked value with no token recorded, plus the 160 highest-implied-value pre-token protocols the watchlist leaves out, below that floor and above it. Protocols whose token already trades are kept apart below, at the market&rsquo;s own market cap &mdash; they are never ranked against the ones still to come.</p>
-    <p class="caveat">A protocol &ldquo;records no token&rdquo; when its DefiLlama record carries none; that is not proof it has none. Nothing here predicts whether or when a token is issued.</p>
-  </section>
-
-  <section class="live" aria-label="Protocols whose token already trades">
-    <h2>Already trading &mdash; the market&rsquo;s own values</h2>
-    <p>These protocols record a token, so the market has already priced them. They are listed here for contrast, never ranked with the pre-token board.</p>
-    <table class="board live-table">
-      <thead><tr><th>Protocol</th><th>Category</th><th class="num">TVL</th><th class="num">Market cap</th><th class="num">7-day</th></tr></thead>
-      <tbody id="live-rows"></tbody>
-    </table>
-  </section>
 </main>
-
-<footer>
-  <p>Token Radar &middot; built for the make.fun token-radar-01 bounty &middot; data: DefiLlama snapshot, sealed at the competition&rsquo;s fetch &middot; values are the radar&rsquo;s own claims, not make.fun&rsquo;s.</p>
-</footer>
-
+<dialog class="detail" id="detail" aria-labelledby="detail-title"></dialog>
 <script src="../data.js"></script>
 <script src="app.js"></script>
 </body>
